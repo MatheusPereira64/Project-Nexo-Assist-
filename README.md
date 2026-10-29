@@ -44,7 +44,27 @@ A política, e não só o prompt, garante o Anexo A:
 - assunto fora de TI (férias, RH, salário, facilities) é recusado na hora de montar o rascunho
 - funcionário só lê os próprios chamados; analista lê os da pessoa da conversa
 
-A sessão do chat aceita 30 mensagens entre a pessoa e o agent. O contador fica no compositor.
+A sessão do chat aceita 30 mensagens entre a pessoa e o agent, contadas no dia corrente em Brasília. O contador fica no compositor. No dia seguinte a mesma conversa continua e o contador volta a zero. Devolver o atendimento ao agent também abre uma sessão nova.
+
+## Como a qualidade foi garantida
+
+As decisões do Anexo A não dependem do modelo acertar o texto. Cada roteiro abaixo tem um teste que trava o resultado. `npm test` roda esses casos sem chamar o LLM. A conversa em linguagem natural, com a chave preenchida, só confirma que o agent conduz até essa decisão.
+
+A chave `OPENAI_API_KEY` deste ambiente está vazia, então os diálogos abaixo não foram executados com o modelo daqui. Com a chave no `.env`, use as contas indicadas.
+
+1. **Dúvida resolvida na central de ajuda.** Elisa (`elisa.prado@nexo.com.br`) diz: "Meu notebook não conecta na VPN. Erro 809 no Windows 10." O agent cita o artigo: reinstalar o cliente e reiniciar, só no Windows 10. No Windows 11, a orientação é abrir chamado. Não aparece rascunho. O teste `a central de ajuda responde o erro 809 sem abrir chamado` confere o artigo.
+
+2. **Consulta sem número.** A conversa do Matheus já guarda esse caminho: ele pergunta o status sem citar o chamado, o agent lista os abertos e, no INC-20311, marca prazo vencido. Para repetir com o agent, Rafael devolve a conversa e o Matheus pergunta de novo "qual o status do meu chamado?". O teste do chamado vencido e da privacidade impede que outra pessoa veja essa lista.
+
+3. **Abertura com rascunho.** Diego (`diego.ramos@nexo.com.br`) pede um teclado novo, sem urgência, só para ele. O agent mostra título, descrição, tipo REQ, categoria, prioridade baixa e quem é afetado. O chamado só existe depois de Confirmar. O teste `confirmação cria, atualiza e reabre sem duplicar fora da janela` espera a decisão `create`.
+
+4. **Duplicidade.** Com a conversa do Matheus de volta ao agent, ele diz que o notebook continua lento depois da atualização do Windows. A confirmação atualiza o INC-20311 em vez de abrir outro. O mesmo teste espera a decisão `update`.
+
+5. **Reabertura em até 7 dias.** O INC-20150, senha do SAP do Bruno, foi resolvido há 4 dias. Um pedido igual reabre esse chamado. Passados os 7 dias, o caso da troca de senha da rede vira chamado novo. Os testes de duplicidade cobrem a reabertura e a janela vencida.
+
+6. **Transferência com resumo.** Elisa diz "quero falar com um analista", ou o caso é crítico, o chamado está vencido, ou a confiança fica abaixo de 55. A conversa vai para a fila com um resumo e o agent para de responder. A do Matheus já está assim: resumo do notebook vencido, na fila N2 do Rafael. O teste de transferência cobre pedido explícito, crítico, vencido e confiança 41.
+
+7. **Continuidade no dia seguinte.** As mensagens ficam no SQLite e sobrevivem a um reinício. No mesmo dia, a 31ª mensagem é recusada e o texto avisa que o contador zera no dia seguinte. Na virada do dia em Brasília, o histórico permanece e a contagem recomeça. O teste `no dia seguinte a conversa continua e o contador da sessão zera` usa uma mensagem de ontem e espera contagem zero.
 
 ## Trade-offs
 
@@ -55,4 +75,4 @@ A sessão do chat aceita 30 mensagens entre a pessoa e o agent. O contador fica 
 
 ## O que eu faria com mais tempo
 
-Avaliação automática dos roteiros do Anexo A com o modelo de verdade, fila com mais de um analista disponível ao mesmo tempo, e o deploy com teto de uso.
+Rodar os sete roteiros com o modelo de verdade, numa avaliação automática, fila com mais de um analista disponível ao mesmo tempo, e o deploy com teto de uso.

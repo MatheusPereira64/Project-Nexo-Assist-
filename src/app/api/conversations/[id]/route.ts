@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/auth";
 import { countSessionMessages, getConversation, listMessages, listTicketsByRequester } from "@/db/repository";
+import { rollSessionIfNewDay } from "@/services/desk";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -16,9 +17,9 @@ export async function GET(_request: Request, { params }: Params) {
   if (user.role === "employee" && conversation.employeeId !== user.id) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 403 });
   }
-  const recordStarted = conversation.sessionStartedAt;
+  const recordStarted = rollSessionIfNewDay(id);
   return NextResponse.json({
-    conversation,
+    conversation: getConversation(id),
     messages: listMessages(id),
     tickets: listTicketsByRequester(conversation.employeeId),
     sessionCount: countSessionMessages(id, recordStarted),

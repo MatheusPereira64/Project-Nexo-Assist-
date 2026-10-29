@@ -8,7 +8,7 @@ import {
   listMessages,
   listTicketsByRequester,
 } from "@/db/repository";
-import { noteEmployeeWaiting } from "@/services/desk";
+import { noteEmployeeWaiting, rollSessionIfNewDay } from "@/services/desk";
 import { runAgent } from "@/mastra/run";
 
 export const runtime = "nodejs";
@@ -45,12 +45,14 @@ export async function POST(request: Request) {
       };
 
       try {
+        const sessionStartedAt =
+          conversation.state === "with_agent" ? rollSessionIfNewDay(conversationId) : conversation.sessionStartedAt;
         if (conversation.state === "with_agent") {
-          const used = countSessionMessages(conversationId, conversation.sessionStartedAt);
+          const used = countSessionMessages(conversationId, sessionStartedAt);
           if (used >= SESSION_MESSAGE_LIMIT) {
             send({
               type: "error",
-              message: `Esta sessão chegou a ${SESSION_MESSAGE_LIMIT} mensagens. Fale com um analista ou volte mais tarde para uma sessão nova.`,
+              message: `Esta sessão chegou a ${SESSION_MESSAGE_LIMIT} mensagens. A conversa continua salva. O contador zera no dia seguinte, ou quando um analista devolver o atendimento ao agent.`,
             });
             controller.close();
             return;

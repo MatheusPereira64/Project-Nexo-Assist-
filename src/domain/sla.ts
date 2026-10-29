@@ -26,6 +26,12 @@ export function zonedParts(date: Date): Zoned {
   };
 }
 
+export function isSameZonedDay(a: Date, b: Date): boolean {
+  const left = zonedParts(a);
+  const right = zonedParts(b);
+  return left.year === right.year && left.month === right.month && left.day === right.day;
+}
+
 export function fromZoned(year: number, month: number, day: number, hour: number, minute: number): Date {
   return new Date(Date.UTC(year, month - 1, day, hour + BRT_OFFSET_HOURS, minute, 0, 0));
 }

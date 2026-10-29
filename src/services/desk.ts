@@ -1,4 +1,5 @@
 import type { Priority } from "@/domain/types";
+import { isSameZonedDay } from "@/domain/sla";
 import { shouldTransfer, type Actor } from "@/domain/policy";
 import {
   getConversationRecord,
@@ -90,6 +91,17 @@ export function assumeConversation(conversationId: string, analyst: Actor): void
     content: `${user.name} assumiu · agent pausado`,
     createdAt: now,
   });
+}
+
+export function rollSessionIfNewDay(conversationId: string, now = new Date()): string {
+  const conversation = getConversationRecord(conversationId);
+  if (!conversation) return now.toISOString();
+  if (conversation.state !== "with_agent" || isSameZonedDay(new Date(conversation.sessionStartedAt), now)) {
+    return conversation.sessionStartedAt;
+  }
+  const started = now.toISOString();
+  updateConversation(conversationId, { sessionStartedAt: started });
+  return started;
 }
 
 export function returnConversation(conversationId: string, analyst: Actor): void {

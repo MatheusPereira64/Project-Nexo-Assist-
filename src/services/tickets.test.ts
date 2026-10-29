@@ -82,6 +82,34 @@ test("confirmação cria, atualiza e reabre sem duplicar fora da janela", async 
   expect(confirmDraft(reopened.draft.id, { id: "user-bruno", role: "employee" }).decision).toBe("reopen");
 });
 
+test("a central de ajuda responde o erro 809 sem abrir chamado", async () => {
+  const { searchHelp } = await import("@/services/knowledge");
+  const hits = searchHelp("VPN com erro 809 no Windows 10");
+  expect(hits[0]?.body).toMatch(/Windows 10/);
+  expect(hits[0]?.body).toMatch(/Windows 11/);
+});
+
+test("no dia seguinte a conversa continua e o contador da sessão zera", async () => {
+  const { getConversationRecord, insertMessage, listMessages, countSessionMessages, updateConversation } = await import("@/db/repository");
+  const { rollSessionIfNewDay } = await import("@/services/desk");
+  const yesterday = new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString();
+  updateConversation("conv-elisa", { sessionStartedAt: yesterday, state: "with_agent" });
+  insertMessage({
+    conversationId: "conv-elisa",
+    role: "user",
+    authorName: "Elisa Prado",
+    content: "mensagem de ontem",
+    createdAt: yesterday,
+  });
+  const now = new Date();
+  const started = rollSessionIfNewDay("conv-elisa", now);
+  expect(started).toBe(now.toISOString());
+  expect(countSessionMessages("conv-elisa", started)).toBe(0);
+  expect(listMessages("conv-elisa").some((message) => message.content === "mensagem de ontem")).toBe(true);
+  expect(getConversationRecord("conv-elisa")?.state).toBe("with_agent");
+  expect(rollSessionIfNewDay("conv-elisa", new Date(now.getTime() + 60 * 1000))).toBe(started);
+});
+
 test("assunto fora de TI e indisponibilidade do legado", async () => {
   const { saveDraft, setTicketServiceMode, TicketServiceUnavailable, assertTicketService } = await import("@/services/tickets");
   expect(() =>

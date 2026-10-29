@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { addBusinessHours, deadlineFor, fromZoned, isOverdue, zonedParts } from "./sla";
+import { addBusinessHours, deadlineFor, fromZoned, isOverdue, isSameZonedDay, zonedParts } from "./sla";
 
 describe("prazos úteis", () => {
   test("quatro horas úteis atravessam o fim de semana", () => {
@@ -25,6 +25,13 @@ describe("prazos úteis", () => {
     const saturday = fromZoned(2026, 10, 31, 12, 0);
     const due = addBusinessHours(saturday, 4);
     expect(zonedParts(due)).toMatchObject({ day: 2, hour: 12, minute: 0, month: 11 });
+  });
+
+  test("a sessão muda só quando vira o dia em Brasília", () => {
+    const night = new Date("2026-10-29T02:30:00.000Z");
+    const nextMorning = new Date("2026-10-29T11:00:00.000Z");
+    expect(isSameZonedDay(fromZoned(2026, 10, 28, 12, 0), night)).toBe(true);
+    expect(isSameZonedDay(night, nextMorning)).toBe(false);
   });
 
   test("vencido quando o prazo já passou", () => {
