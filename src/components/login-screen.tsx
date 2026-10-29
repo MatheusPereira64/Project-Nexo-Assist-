@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mark } from "./icons";
 
 export function LoginScreen() {
@@ -8,6 +8,15 @@ export function LoginScreen() {
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [privacy, setPrivacy] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const privacyButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (privacy && !dialog.open) dialog.showModal();
+    if (!privacy && dialog.open) dialog.close();
+  }, [privacy]);
 
   async function onSubmit(formData: FormData) {
     setPending(true);
@@ -121,7 +130,11 @@ export function LoginScreen() {
               <input name="keep" type="checkbox" />
               Manter conectado neste computador
             </label>
-            {error && <div className="alert">{error}</div>}
+            {error && (
+              <div className="alert" role="alert">
+                {error}
+              </div>
+            )}
             {notice && <p className="note">{notice}</p>}
             <button className="btn block" type="submit" disabled={pending}>
               {pending ? "Entrando…" : "Entrar"}
@@ -130,22 +143,30 @@ export function LoginScreen() {
         </div>
         <footer className="signin-foot">
           <span>© 2026 Nexo · Service desk de TI</span>
-          <button className="linkish" type="button" onClick={() => setPrivacy(true)}>
+          <button ref={privacyButtonRef} className="linkish" type="button" onClick={() => setPrivacy(true)}>
             Privacidade e uso de dados
           </button>
         </footer>
       </section>
-      {privacy && (
-        <dialog className="dialog" open>
-          <h3>Privacidade</h3>
-          <p className="note">
-            O Nexo Assist só consulta chamados de quem está na conversa. Um funcionário não vê chamados de outro. Analistas enxergam os chamados da pessoa que estão atendendo.
-          </p>
-          <button className="btn" type="button" onClick={() => setPrivacy(false)}>
-            Fechar
-          </button>
-        </dialog>
-      )}
+      <dialog
+        ref={dialogRef}
+        className="dialog"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") dialogRef.current?.close();
+        }}
+        onClose={() => {
+          setPrivacy(false);
+          privacyButtonRef.current?.focus();
+        }}
+      >
+        <h3>Privacidade</h3>
+        <p className="note">
+          O Nexo Assist só consulta chamados de quem está na conversa. Um funcionário não vê chamados de outro. Analistas enxergam os chamados da pessoa que estão atendendo.
+        </p>
+        <button className="btn" type="button" onClick={() => dialogRef.current?.close()}>
+          Fechar
+        </button>
+      </dialog>
     </main>
   );
 }

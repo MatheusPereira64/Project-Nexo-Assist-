@@ -45,3 +45,33 @@ export function IconSair(props: IconProps) {
     </Svg>
   );
 }
+
+export function IconMail(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+      <path d="m4 7 8 6 8-6" />
+    </Svg>
+  );
+}
+
+export function IconKey(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="8" cy="12" r="4.2" />
+      <circle cx="8" cy="12" r="1.45" />
+      <path d="M12.1 12H21" />
+      <path d="M17 12v2.7" />
+      <path d="M20 12v2.2" />
+    </Svg>
+  );
+}
+
+export function IconLock(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="5" y="10.5" width="14" height="9" rx="2" />
+      <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" />
+    </Svg>
+  );
+}

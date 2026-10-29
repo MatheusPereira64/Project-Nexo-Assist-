@@ -42,6 +42,8 @@ export function ConsoleScreen({
   const [error, setError] = useState<string | null>(null);
   const [available, setAvailable] = useState(analyst.available);
   const [busy, setBusy] = useState(false);
+  const [showThread, setShowThread] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const selected = items.find((item) => item.id === selectedId) ?? items[0];
 
@@ -73,6 +75,7 @@ export function ConsoleScreen({
 
   async function open(id: string) {
     setSelectedId(id);
+    setShowThread(true);
     setError(null);
     const response = await fetch(`/api/conversations/${id}/actions`, {
       method: "POST",
@@ -120,16 +123,19 @@ export function ConsoleScreen({
   const mine = selected?.state === "with_analyst" && selected.analystId === analyst.id;
 
   return (
-    <div className="console">
+    <div className={`console${showThread ? " show-thread" : ""}${historyOpen ? " history-open" : ""}`}>
+      <button className="history-backdrop" type="button" aria-label="Fechar chamados" onClick={() => setHistoryOpen(false)} />
       <aside className="rail">
         <Mark />
         <button className="rail-btn" type="button" aria-label="Conversas">
           {items.filter((item) => item.unreadForAnalyst > 0).length || "·"}
         </button>
-        <div style={{ flex: 1 }} />
+        <div className="rail-spacer" />
         <button
           className="avatar"
           type="button"
+          aria-label="Sair"
+          title="Sair"
           onClick={() => {
             void fetch("/api/auth/logout", { method: "POST" }).then(() => router.push("/login"));
           }}
@@ -163,7 +169,7 @@ export function ConsoleScreen({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             aria-label="Pesquisar conversa ou chamado"
-            style={{ marginTop: 12 }}
+            className="inbox-search"
           />
           <div className="filters">
             <button className={filter === "all" ? "filter active" : "filter"} type="button" onClick={() => setFilter("all")}>
@@ -183,7 +189,7 @@ export function ConsoleScreen({
         <div className="people">
           {visible.map((item) => (
             <button key={item.id} className={item.id === selected?.id ? "person active" : "person"} type="button" onClick={() => void open(item.id)}>
-              <div className="avatar">{item.employeeInitials}</div>
+              <div className={`avatar ${toneClass(item.employeeId)}`}>{item.employeeInitials}</div>
               <div>
                 <b>{item.employeeName}</b>
                 <div className="note">{item.preview}</div>
@@ -195,20 +201,30 @@ export function ConsoleScreen({
               </div>
             </button>
           ))}
+          {visible.length === 0 && <p className="empty">Nenhuma conversa neste filtro.</p>}
         </div>
       </aside>
       <section className="pane">
-        {selected && (
+        {selected ? (
           <>
             <header>
-              <div>
+              <div className="pane-who">
+                <button className="btn ghost back" type="button" onClick={() => setShowThread(false)}>
+                  Voltar
+                </button>
+                <div className={`avatar ${toneClass(selected.employeeId)}`}>{selected.employeeInitials}</div>
+                <div>
                 <strong>{selected.employeeName}</strong>
                 <div className="note">
                   {selected.employeeDepartment}
                   {featured ? ` · ${featured.code}` : ""} · {statusLabel(selected)}
                 </div>
+                </div>
               </div>
               <div className="actions">
+                <button className="btn ghost history-toggle" type="button" aria-expanded={historyOpen} onClick={() => setHistoryOpen(true)}>
+                  Chamados
+                </button>
                 {selected.state !== "closed" && (
                   <button className="btn ghost" type="button" disabled={busy} onClick={() => void act("return")}>
                     Devolver ao agent
@@ -228,11 +244,14 @@ export function ConsoleScreen({
               </div>
             </header>
             <Thread messages={messages} />
-            {error && <div className="alert" style={{ margin: "0 16px" }}>{error}</div>}
+            {error && (
+              <div className="alert" role="alert">
+                {error}
+              </div>
+            )}
             {mine ? (
               <form
                 className="composer"
-                style={{ margin: 16 }}
                 onSubmit={(event) => {
                   event.preventDefault();
                   void act("reply", draft);
@@ -247,11 +266,18 @@ export function ConsoleScreen({
               <div className="composer-note">Assuma o atendimento para responder</div>
             )}
           </>
+        ) : (
+          <p className="empty">Selecione uma conversa para atender.</p>
         )}
       </section>
       <aside className="history">
         <header>
-          <strong>Chamados {selected ? `de ${selected.employeeName.split(" ")[0]}` : ""}</strong>
+          <div className="card-top">
+            <strong>Chamados {selected ? `de ${selected.employeeName.split(" ")[0]}` : ""}</strong>
+            <button className="btn ghost history-close" type="button" onClick={() => setHistoryOpen(false)}>
+              Fechar
+            </button>
+          </div>
           <div className="note">
             {openTickets.length} abertos · {closedTickets.length} encerrados
           </div>
@@ -269,6 +295,26 @@ export function ConsoleScreen({
       </aside>
     </div>
   );
+}
+
+const toneByEmployee: Record<string, string> = {
+  "user-ana": "tone-blue",
+  "user-carla": "tone-orange",
+  "user-bruno": "tone-purple",
+  "user-diego": "tone-green",
+  "user-elisa": "tone-pink",
+  "user-fabio": "tone-sand",
+  "user-gabriela": "tone-yellow",
+  "user-helena": "tone-teal",
+};
+
+const tones = ["tone-blue", "tone-orange", "tone-purple", "tone-green", "tone-pink", "tone-sand", "tone-yellow", "tone-teal"];
+
+function toneClass(employeeId: string): string {
+  const known = toneByEmployee[employeeId];
+  if (known) return known;
+  const index = [...employeeId].reduce((sum, char) => sum + char.charCodeAt(0), 0) % tones.length;
+  return tones[index] ?? "tone-blue";
 }
 
 function statusLabel(conversation: ConversationView): string {

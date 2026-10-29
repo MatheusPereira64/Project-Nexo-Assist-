@@ -28,13 +28,13 @@ export function EmployeeShell({
           </div>
         </div>
         <nav className="nav">
-          <a className={active === "atendimento" ? "active" : ""} href="/atendimento">
+          <a className={active === "atendimento" ? "active" : ""} href="/atendimento" aria-label="Atendimento" title="Atendimento">
             <IconAtendimento />
-            Atendimento
+            <span className="nav-label">Atendimento</span>
           </a>
-          <a className={active === "perfil" ? "active" : ""} href="/perfil">
+          <a className={active === "perfil" ? "active" : ""} href="/perfil" aria-label="Meu perfil" title="Meu perfil">
             <IconPerfil />
-            Meu perfil
+            <span className="nav-label">Meu perfil</span>
           </a>
         </nav>
         <div className="spacer" />
@@ -42,18 +42,20 @@ export function EmployeeShell({
           <div className="avatar">{user.initials}</div>
           <div className="word">
             <b>{user.name}</b>
-            <small>{user.email}</small>
+            <small title={user.email}>{user.email}</small>
           </div>
         </div>
         <button
           className="btn ghost leave"
           type="button"
+          aria-label="Sair"
+          title="Sair"
           onClick={() => {
             void fetch("/api/auth/logout", { method: "POST" }).then(() => router.push("/login"));
           }}
         >
           <IconSair />
-          Sair
+          <span className="leave-label">Sair</span>
         </button>
       </aside>
       <section className="main">

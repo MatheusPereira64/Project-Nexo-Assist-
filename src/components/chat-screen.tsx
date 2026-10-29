@@ -145,7 +145,11 @@ export function ChatScreen({ user, initial }: { user: PublicUser; initial: Paylo
           onAction={(id) => void act(id === "transfer" ? "transfer" : id)}
           onDraft={(draftId, action, patch) => void onDraft(draftId, action, patch)}
         />
-        {error && <div className="alert">{error}</div>}
+        {error && (
+          <div className="alert" role="alert">
+            {error}
+          </div>
+        )}
         <form
           className="composer"
           onSubmit={(event) => {

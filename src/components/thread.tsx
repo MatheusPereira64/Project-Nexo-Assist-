@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { Block, DraftView, MessageView } from "@/domain/blocks";
 import type { DraftInput } from "@/domain/policy";
 import { PRIORITY_LABEL } from "@/domain/types";
@@ -19,8 +20,25 @@ export function Thread({
   onAction?: (id: string) => void;
   onDraft?: (draftId: string, action: "confirm" | "cancel" | "edit", patch?: Partial<DraftInput>) => void;
 }) {
+  const scroller = useRef<HTMLDivElement>(null);
+  const stick = useRef(true);
+
+  useEffect(() => {
+    const element = scroller.current;
+    if (!element || !stick.current) return;
+    element.scrollTop = element.scrollHeight;
+  }, [messages]);
+
   return (
-    <div className="thread">
+    <div
+      className="thread"
+      ref={scroller}
+      onScroll={(event) => {
+        const element = event.currentTarget;
+        stick.current = element.scrollHeight - element.scrollTop - element.clientHeight < 80;
+      }}
+    >
+      {messages.length === 0 && <p className="empty">Nenhuma mensagem nesta conversa.</p>}
       {messages.map((message) => {
         if (message.role === "system") {
           return (
@@ -51,7 +69,15 @@ export function Thread({
                   <span>{formatClock(message.createdAt)}</span>
                 </div>
               )}
-              {message.content}
+              {message.id === "local-agent" && message.content === "" ? (
+                <span className="typing" aria-label="Digitando">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              ) : (
+                message.content
+              )}
             </div>
             {message.trace && (
               <details className="trace">
@@ -205,7 +231,7 @@ function DraftCard({
         )}
       </div>
       {draft.status === "pending" && interactive && (
-        <div className="actions" style={{ marginTop: 12 }}>
+        <div className="actions">
           <button className="btn" type="button" onClick={() => onDraft?.(draft.draftId, "confirm")}>
             Confirmar
           </button>

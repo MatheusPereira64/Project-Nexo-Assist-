@@ -71,8 +71,17 @@ A chave `OPENAI_API_KEY` deste ambiente está vazia, então os diálogos abaixo 
 - SQLite no processo do Next, em vez de um banco à parte, para subir com um comando. Não serve para mais de uma instância.
 - O rastro depende do modelo chamar `record-decision`. Se ele não chamar, a interface ainda mostra as ferramentas e uma leitura inferida, com confiança mais baixa.
 - A falha do legado é probabilística em desenvolvimento (cerca de 8%). Os testes fixam o modo para não oscilar.
-- Deploy ficou de fora. Publicar conta ponto extra e a ausência não penaliza. Num passo seguinte, eu colocaria a app na Vercel ou no Railway, a chave só no painel da plataforma, e um limite diário de mensagens por usuário para segurar custo.
+- A hospedagem escolhida é a Render, no plano Free (US$ 0 por mês). A Vercel também é grátis, mas publica o Next como funções separadas, e o SQLite deste projeto não seria o mesmo arquivo no login e no chat. Railway só cobre cerca de US$ 1 por mês depois do trial, e a Fly.io cobra em conta nova. Na instância Free da Render há um processo só, então o SQLite vale enquanto ela está acordada. Sem acesso por cerca de 15 minutos ela dorme; ao voltar, o disco efêmero está vazio e os dados de exemplo são recriados. A chave da OpenAI fica no painel e é o único custo variável.
 
 ## O que eu faria com mais tempo
 
-Rodar os sete roteiros com o modelo de verdade, numa avaliação automática, fila com mais de um analista disponível ao mesmo tempo, e o deploy com teto de uso.
+Rodar os sete roteiros com o modelo de verdade, numa avaliação automática, fila com mais de um analista disponível ao mesmo tempo, e um teto diário de mensagens para segurar o custo da OpenAI.
+
+## Deploy
+
+O blueprint está em `render.yaml`, no plano Free.
+
+1. Entre em [render.com](https://render.com) com a conta gratuita.
+2. Crie um Blueprint apontando para este repositório.
+3. Quando a Render pedir `OPENAI_API_KEY`, cole a chave só no painel. Ela não vai no Git.
+4. Abra a URL do serviço. A primeira resposta depois que a instância dormiu pode levar cerca de um minuto, e a base volta para os dados de exemplo.

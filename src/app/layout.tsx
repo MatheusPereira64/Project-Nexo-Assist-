@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Newsreader, Schibsted_Grotesk } from "next/font/google";
 import "./globals.css";
 
@@ -11,10 +11,16 @@ export const metadata: Metadata = {
   description: "Agent do service desk de TI da Nexo.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#1b2431",
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body className={`${ui.variable} ${display.variable} ${mono.variable}`}>{children}</body>
+    <html lang="pt-BR" className={`${ui.variable} ${display.variable} ${mono.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
