@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Mark } from "./icons";
 
 export function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function LoginScreen() {
     <main className="login">
       <section className="showcase">
         <div className="brand">
-          <div className="mark">N</div>
+          <Mark />
           <div>
             <strong>Nexo Assist</strong>
             <small>Service desk de TI da Nexo</small>

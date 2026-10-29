@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ConversationView, MessageView, PublicUser, TicketView } from "@/domain/blocks";
 import { formatListTime } from "@/lib/format";
+import { Mark } from "./icons";
 import { Thread } from "./thread";
 import { TicketRow } from "./ticket-card";
 
@@ -121,7 +122,7 @@ export function ConsoleScreen({
   return (
     <div className="console">
       <aside className="rail">
-        <div className="mark">N</div>
+        <Mark />
         <button className="rail-btn" type="button" aria-label="Conversas">
           {items.filter((item) => item.unreadForAnalyst > 0).length || "·"}
         </button>

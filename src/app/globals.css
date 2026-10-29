@@ -109,12 +109,12 @@ input:focus, textarea:focus { border-color: #9ec7ef; box-shadow: 0 0 0 4px #0285
 .note { color: var(--ink-3); font-size: 13px; line-height: 1.45; }
 .signin-foot { display: flex; justify-content: space-between; gap: 12px; color: var(--ink-3); font-size: 12px; }
 
-.shell { min-height: 100vh; display: grid; grid-template-columns: 232px 1fr; background: var(--desk); }
+.shell { height: 100vh; display: grid; grid-template-columns: 232px 1fr; background: var(--desk); overflow: hidden; }
 .sidebar, .history, .inbox, .rail { background: var(--paper); }
 .sidebar { border-right: 1px solid var(--rule); padding: 22px 16px; display: flex; flex-direction: column; }
 .nav { display: flex; flex-direction: column; gap: 4px; margin-top: 22px; }
 .nav a, .filter {
-  text-decoration: none; border-radius: 10px; padding: 10px 12px; color: var(--ink-2); display: flex; justify-content: space-between;
+  text-decoration: none; border-radius: 10px; padding: 10px 12px; color: var(--ink-2); display: flex; align-items: center; gap: 10px;
 }
 .nav a.active, .filter.active { background: var(--primary-soft); color: var(--cta); font-weight: 650; }
 .sidebar .spacer { flex: 1; }
@@ -124,15 +124,16 @@ input:focus, textarea:focus { border-color: #9ec7ef; box-shadow: 0 0 0 4px #0285
   background: #e7eef8; color: var(--cta); font-size: 12px; font-weight: 700; flex: none;
 }
 .user-card small, .person small { color: var(--ink-3); display: block; }
-.leave { margin-top: 8px; }
+.leave { margin-top: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 
-.main { min-width: 0; display: flex; flex-direction: column; min-height: 100vh; }
+.main { min-width: 0; display: flex; flex-direction: column; min-height: 0; }
 .topbar {
   height: 64px; background: var(--paper); border-bottom: 1px solid var(--rule);
   display: flex; align-items: center; justify-content: space-between; padding: 0 28px;
 }
 .eyebrow { margin: 0; font-size: 12px; }
-.topbar h1 { margin: 0; font-size: 16px; }
+.crumb { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--ink-3); font-size: 14px; }
+.crumb h1 { margin: 0; font-size: 14px; font-weight: 650; color: var(--ink); }
 .presence { display: flex; align-items: center; gap: 8px; color: var(--success); font-size: 13px; }
 .dot { width: 8px; height: 8px; border-radius: 99px; background: #00bd6c; }
 .dot.warn { background: #f5a500; }
